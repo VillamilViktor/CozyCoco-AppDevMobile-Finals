@@ -12,10 +12,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
 
 class ActivityLogin : AppCompatActivity() {
 
     private val auth = Firebase.auth
+    private val db = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,29 +35,46 @@ class ActivityLogin : AppCompatActivity() {
         val tvRegister = findViewById<TextView>(R.id.tvRegister)
 
         btnLogin.setOnClickListener {
-            val email = etUsername.text.toString().trim()
+            val username = etUsername.text.toString().trim()
             val password = etPassword.text.toString()
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             btnLogin.isEnabled = false
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this) { task ->
-                    btnLogin.isEnabled = true
-                    if (task.isSuccessful) {
-                        Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this, HomeActivity::class.java))
-                        finish()
-                    } else {
-                        Toast.makeText(
-                            this,
-                            task.exception?.localizedMessage ?: "Login failed",
-                            Toast.LENGTH_LONG
-                        ).show()
+
+            // Step 1: find the email that belongs to this username
+            db.collection("users")
+                .whereEqualTo("username", username)
+                .limit(1)
+                .get()
+                .addOnSuccessListener { result ->
+                    val email = result.documents.firstOrNull()?.getString("email")
+
+                    if (email == null) {
+                        btnLogin.isEnabled = true
+                        Toast.makeText(this, "Invalid username or password", Toast.LENGTH_LONG).show()
+                        return@addOnSuccessListener
                     }
+
+                    // Step 2: sign in with Firebase Auth using that email
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this) { task ->
+                            btnLogin.isEnabled = true
+                            if (task.isSuccessful) {
+                                Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show()
+                                startActivity(Intent(this, HomeActivity::class.java))
+                                finish()
+                            } else {
+                                Toast.makeText(this, "Invalid username or password", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                }
+                .addOnFailureListener { e ->
+                    btnLogin.isEnabled = true
+                    Toast.makeText(this, e.localizedMessage ?: "Login failed", Toast.LENGTH_LONG).show()
                 }
         }
 
