@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "578681360309",
+    "project_id": "cozycoco-d9e84",
+    "storage_bucket": "cozycoco-d9e84.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:578681360309:android:a4f1fb25fbef0735cc53fc",
+        "android_client_info": {
+          "package_name": "com.example.cozycoco"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMeNNYwPbOPFPkkleSNLnf48IXW7ycAsA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
